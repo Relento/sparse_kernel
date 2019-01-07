@@ -1,0 +1,95 @@
+//
+// Created by Rel on 2019/1/5.
+//
+
+#ifndef SPARSE_KERNEL_TRIANGULAR_TEST_H
+#define SPARSE_KERNEL_TRIANGULAR_TEST_H
+
+
+#include "triangular_solver.h"
+#include "numerical_utils.h"
+#include "utils.h"
+#include <chrono>
+
+using namespace std::chrono;
+
+template <typename T>
+class TriangularTester{
+public:
+    class TestResult;
+
+    // list of testcases
+    std::vector<SparseMatrix<T> *> Ls;
+    std::vector<std::vector<T> *> bs;
+    std::vector<std::string> names;
+
+    void loadCase(SparseMatrix<T> * L,std::vector<T>* b,std::string name){
+        Ls.push_back(L);
+        bs.push_back(b);
+        names.push_back(name);
+    }
+
+    // if save_path is not empty, save each solution to corresponding file
+    // NOTE: save_path should end with backslash
+    std::vector<TestResult> testSolver(TriangularSolver<T> *s,
+            const std::string &solver_name, bool cal_err = true, const std::string &save_path = "");
+
+    // Store the result of a testcase
+    struct TestResult{
+        T err_norm;
+        double duration;
+        TestResult(T err_norm, double duration):err_norm(err_norm),duration(duration){}
+    };
+};
+
+template<>
+std::vector<TriangularTester<double>::TestResult>
+TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
+        const std::string &solver_name,bool cal_err, const std::string &save_path) {
+    std::vector<TestResult> res;
+    high_resolution_clock::time_point t1,t2;
+    SparseMatrix<double> L_orig;
+    double err_norm;
+
+    for (uint32_t i = 0; i < Ls.size();i++){
+        auto &L = *(Ls[i]);
+        auto &b = *(bs[i]);
+        std::vector<double> x(b);
+
+
+
+        std::cout<<std::endl;
+        if (cal_err){
+            L_orig = L;
+        }
+
+        t1 = high_resolution_clock::now();
+        solver->solve(L,x);
+        t2 = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(t2-t1).count();
+
+        if (cal_err){
+            err_norm = differenceNorm(L_orig*x,b);
+        }
+
+        else{
+            err_norm = -1;
+        }
+
+
+        std::cout.precision(6);
+        std::cout<<"Test case \""<<names[i]<<"\":"<<std::endl;
+        std::cout<<"\tCol size: "<<Ls[i]->n<<std::endl;
+        std::cout<<"\tSolve time:"<<((double)duration)/1e6<<std::endl;
+        std::cout<<"\tError norm:"<<err_norm<<std::endl;
+        res.emplace_back(err_norm,(double)duration/1e6);
+        if(!save_path.empty()){
+            saveMatrix(SparseMatrix<double>(x),save_path+names[i]+"_"+solver_name+".mtx");
+        }
+    }
+
+    return res;
+}
+
+
+#endif //SPARSE_KERNEL_TRIANGULAR_TEST_H
