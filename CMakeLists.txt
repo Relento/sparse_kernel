@@ -14,7 +14,7 @@ set(COMMON_SOURCES
         triangular_naive.h
         numerical_utils.h
         triangular_serial.h;
-        )
+        triangular_para.h)
 
 #add_executable(main main.cpp ${COMMON_SOURCES})
 

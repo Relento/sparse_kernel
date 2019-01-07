@@ -10,6 +10,7 @@
 #include "numerical_utils.h"
 #include "utils.h"
 #include <chrono>
+#include <cmath>
 
 using namespace std::chrono;
 
@@ -52,6 +53,7 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
     SparseMatrix<double> L_dup;
     double err_norm;
 
+    std::cout<<"Testing "<<solver_name<<std::endl;
     for (uint32_t i = 0; i < Ls.size();i++){
         auto &L = *(Ls[i]);
         auto &b = *(bs[i]);
@@ -90,6 +92,16 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
         std::cout<<"\tError norm:"<<err_norm<<std::endl;
         res.emplace_back(err_norm,(double)duration/1e6);
 
+
+        uint32_t nnz45 = 0;
+        uint32_t nnz50 = 0;
+        uint32_t nnz55 = 0;
+        for (auto &e: x){
+            if(fabs(e)>1e-50) nnz50++;
+            if(fabs(e)>1e-45) nnz45++;
+            if(fabs(e)>1e-55) nnz55++;
+        }
+        std::cout<<nnz45<<" "<<nnz50<<" "<<nnz55<<std::endl;
         if(!save_path.empty()){
             saveMatrix(SparseMatrix<double>(x),save_path+names[i]+"_"+solver_name+".mtx");
         }

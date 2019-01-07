@@ -23,6 +23,8 @@ public:
     // b_nnz is the row ind of non-zero entries in b vector
     // entries are sorted in **reverse** topological order
     std::vector<uint32_t> calReachable(SparseMatrix<T> &L,std::vector<uint32_t> &b_nnz);
+    std::vector<uint32_t> calReachable2(SparseMatrix<T> &L,std::vector<uint32_t> &b_nnz);
+    void dfs(uint32_t node,SparseMatrix<T> &L,std::vector<bool> &visit,std::vector<uint32_t> &reach_set);
 };
 
 template<typename T>
@@ -38,9 +40,9 @@ int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
         if(!isZero(x[i])) nnz.push_back(i);
     }
 
-//    std::cout<<nnz.size()<<std::endl;
+    std::cout<<nnz.size()<<std::endl;
     std::vector<uint32_t> reach_set = calReachable(L,nnz);
-//    std::cout<<reach_set.size()<<std::endl;
+    std::cout<<reach_set.size()<<std::endl;
 
     auto t2 = high_resolution_clock::now();
 
@@ -63,7 +65,7 @@ int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
 }
 
 template<typename T>
-std::vector<uint32_t> TriangularSerial<T>::calReachable(SparseMatrix<T> &L, std::vector<uint32_t> &b_nnz) {
+std::vector<uint32_t> TriangularSerial<T>::calReachable2(SparseMatrix<T> &L, std::vector<uint32_t> &b_nnz) {
 
     // A modified non-recursive dfs that can calculate topological order at the same time
     std::vector<bool> visit(L.m);
@@ -98,6 +100,26 @@ std::vector<uint32_t> TriangularSerial<T>::calReachable(SparseMatrix<T> &L, std:
     }
 
     return reach_set;
+}
+
+template<typename T>
+std::vector<uint32_t> TriangularSerial<T>::calReachable(SparseMatrix<T> &L, std::vector<uint32_t> &b_nnz) {
+    std::vector<bool> visit(L.m);
+    std::vector<uint32_t> reach_set;
+    for(auto &e:b_nnz){
+        dfs(e,L,visit,reach_set);
+    }
+    return reach_set;
+}
+
+template<typename T>
+void TriangularSerial<T>::dfs(uint32_t node,SparseMatrix<T> &L, std::vector<bool> &visit, std::vector<uint32_t> &reach_set) {
+    if(visit[node]) return;
+    visit[node] = true;
+    for(uint32_t ind = L.outer_starts[node];ind<L.outer_starts[node+1];ind++){
+        if(!visit[L.inner_indices[ind]]) dfs(L.inner_indices[ind],L,visit,reach_set);
+    }
+    reach_set.push_back(node);
 }
 
 
