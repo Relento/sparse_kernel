@@ -17,51 +17,42 @@ using namespace Eigen;
 
 int main(){
     VectorXd x;
-    Eigen::SparseMatrix<double, ColMajor> L,bMat;
+    Eigen::SparseMatrix<double, ColMajor> L,b_mat_sparse;
+    VectorXd b_mat_dense;
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
 //    assert(loadMarket(L,data_path+"torso2_lower.mtx"));
 //    assert(loadMarket(L,data_path+"torso1.mtx"));
 //    assert(loadMarket(bMat,data_path+"b_for_torso1.mtx"));
-    assert(loadMarket(bMat,data_path+"b_for_TSOPF_RS_b678_c2_b.mtx"));
-    assert(loadMarket(L,data_path+"TSOPF_RS_b678_c2.mtx"));
+//    assert(loadMarket(bMat,data_path+"b_for_TSOPF_RS_b678_c2_b.mtx"));
+//    assert(loadMarket(L,data_path+"TSOPF_RS_b678_c2.mtx"));
 //    assert(loadMarket(L,data_path+"10.mtx"));
 //    assert(loadMarket(bMat,data_path+"b_10.mtx"));
+    assert(loadMarket(b_mat_sparse,data_path+"b_sparse_af_0_k101.mtx"));
+    assert(loadMarketVector(b_mat_dense,data_path+"b_dense_af_0_k101.mtx"));
+    assert(loadMarket(L,data_path+"af_0_k101.mtx"));
 
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
     std::cout << "Load Time:" << (double)duration / 1e6 <<std::endl;
 
-    SparseLU<Eigen::SparseMatrix<double, ColMajor>, COLAMDOrdering<uint32_t>> solver;
+
     t1 = high_resolution_clock::now();
-
-    /*
-    // fill A and b;
-    // Compute the ordering permutation vector from the structural pattern of A
-    solver.analyzePattern(L);
-    // Compute the numerical factorization
-    solver.factorize(L);
-    //Use the factors to solve the linear system
-    x = solver.solve(b);
+    x = L.triangularView<Lower>().solve(MatrixXd(b_mat_sparse));
     t2 = high_resolution_clock::now();
-
-     */
-    MatrixXd tmp(bMat);
-//    std::cout<<L.size()<<" "<<tmp.size()<<std::endl;
-    x = L.triangularView<Lower>().solve(MatrixXd(bMat));
-
-    t2 = high_resolution_clock::now();
-
-
-
     duration = duration_cast<microseconds>( t2 - t1 ).count();
     std::cout << "Solve Time:" << (double)duration / 1e6 <<std::endl;
+    std::cout<<(L.triangularView<Lower>()*x-b_mat_sparse).norm()<<std::endl;
+//    saveMarket(SparseVector<double,ColMajor>(x.sparseView()),data_path+"eigen_tsopf.mtx");
 
-//    saveMarket(SparseVector<double,ColMajor>(x.sparseView()),data_path+"eigen_torso1.mtx");
-//    saveMarket(SparseVector<double,ColMajor>(x.sparseView()),data_path+"eigen_10.mtx");
-    saveMarket(SparseVector<double,ColMajor>(x.sparseView()),data_path+"eigen_tsopf.mtx");
 
-    std::cout<<(L.triangularView<Lower>()*x-bMat).norm()<<std::endl;
+    t1 = high_resolution_clock::now();
+    x = L.triangularView<Lower>().solve(MatrixXd(b_mat_dense));
+    t2 = high_resolution_clock::now();
+    duration = duration_cast<microseconds>( t2 - t1 ).count();
+    std::cout << "Solve Time:" << (double)duration / 1e6 <<std::endl;
+    std::cout<< "Err norm:"<<(L.triangularView<Lower>()*x-b_mat_dense).norm()<<std::endl;
+//    saveMarket(SparseVector<double,ColMajor>(x.sparseView()),data_path+"eigen_tsopf.mtx");
 
     return 0;
 }

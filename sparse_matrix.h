@@ -19,15 +19,19 @@ public:
     SparseMatrix() = default ;
     // Initialize from a column vector
     SparseMatrix(const std::vector<T> &vec);
+
     SparseMatrix(uint32_t m,uint32_t n,uint32_t nnz,
             const std::vector<T> &values,const std::vector<uint32_t> &inner_indices,const std::vector<uint32_t > &outer_starts)
             :m(m),n(n),nnz(nnz),values(values),inner_indices(inner_indices),outer_starts(outer_starts){}
 
-
+    // Print out the transpose of the matrix and other debug information
     void display();
+
     // Convert a column to vector
     int col2Vec(uint32_t col,std::vector<T> &vec);
+    // Multiply with dense vector
     std::vector<T> operator *(const std::vector<T> &x);
+
 //private:
 
     std::vector<T> values;

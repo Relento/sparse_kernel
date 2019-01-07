@@ -4,6 +4,7 @@
 
 #include "triangular_tester.h"
 #include "triangular_naive.h"
+#include "triangular_serial.h"
 #include "utils.h"
 #include <chrono>
 #include <Eigen/Dense>
@@ -14,7 +15,10 @@ static std::string data_path = "C:\\Users\\Rel\\Desktop\\Toronto\\Dehnavi\\spars
 
 using namespace std::chrono;
 
-int main() {
+int main(int argc,char **argv) {
+    bool test_big = false;
+    if(argc>=2 && std::string(argv[1]) == "--testbig") test_big = true;
+
     SparseMatrix<double> L, b_mat,L2,b_mat_sparse;
 
     std::vector<double> b,b_sparse,b_dense;
@@ -24,12 +28,12 @@ int main() {
     assert(loadMatrix(L, data_path + "10.mtx")==0);
     assert(loadMatrix(b_mat, data_path + "b_10.mtx")==0);
 
-//#define TESTBIG
-#ifdef TESTBIG
-    assert(loadMatrix(b_mat_sparse, data_path + "b_sparse_af_0_k101.mtx")==0);
-    assert(loadVector(b_dense, data_path + "b_dense_af_0_k101.mtx")==0);
-    assert(loadMatrix(L2, data_path + "af_0_k101_lower.mtx")==0);
-#endif
+    if(test_big){
+        assert(loadMatrix(b_mat_sparse, data_path + "b_sparse_af_0_k101.mtx")==0);
+        assert(loadVector(b_dense, data_path + "b_dense_af_0_k101.mtx")==0);
+        assert(loadMatrix(L2, data_path + "af_0_k101_lower.mtx")==0);
+    }
+
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
     auto duration = duration_cast<microseconds>(t2 - t1).count();
@@ -39,15 +43,19 @@ int main() {
     b_mat_sparse.col2Vec(0,b_sparse);
 
     TriangularNaive<double> naive;
+
+    TriangularSerial<double> serial;
+
     TriangularTester<double> tester;
+
     tester.loadCase(&L, &b,"10");
+    if(test_big){
+        tester.loadCase(&L2, &b_sparse,"sparse");
+        tester.loadCase(&L2, &b_dense,"dense");
+    }
 
-#ifdef TESTBIG
-    tester.loadCase(&L2, &b_sparse,"sparse");
-    tester.loadCase(&L2, &b_dense,"dense");
-#endif
-
-    tester.testSolver(&naive,"naive",true,data_path);
+//    tester.testSolver(&naive,"naive",true,data_path);
+    tester.testSolver(&serial,"serial",true,data_path);
 
     return 0;
 

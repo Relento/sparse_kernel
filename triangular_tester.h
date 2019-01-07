@@ -46,9 +46,10 @@ template<>
 std::vector<TriangularTester<double>::TestResult>
 TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
         const std::string &solver_name,bool cal_err, const std::string &save_path) {
+
     std::vector<TestResult> res;
     high_resolution_clock::time_point t1,t2;
-    SparseMatrix<double> L_orig;
+    SparseMatrix<double> L_dup;
     double err_norm;
 
     for (uint32_t i = 0; i < Ls.size();i++){
@@ -56,39 +57,39 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
         auto &b = *(bs[i]);
         std::vector<double> x(b);
 
-
-
         std::cout<<std::endl;
-        if (cal_err){
-            L_orig = L;
-        }
+
+        //Duplicate L in case the solver modifies the original
+        // which influences the following test
+        L_dup = L;
+
         std::cout.precision(6);
         std::cout<<"Test case \""<<names[i]<<"\":"<<std::endl;
         std::cout<<"\tCol size: "<<Ls[i]->n<<std::endl;
 
         t1 = high_resolution_clock::now();
-        int err = solver->solve(L,x);
+        int err = solver->solve(L_dup,x);
         t2 = high_resolution_clock::now();
 
         if (err!=0){
-            std::cout<<"Something wrong happens! "<<std::endl;
+            std::cerr<<"Something wrong happens! "<<std::endl;
             continue;
         }
 
         auto duration = duration_cast<microseconds>(t2-t1).count();
 
         if (cal_err){
-            err_norm = differenceNorm(L_orig*x,b);
+            err_norm = differenceNorm(L_dup*x,b);
         }
 
         else{
             err_norm = -1;
         }
 
-
         std::cout<<"\tSolve time:"<<((double)duration)/1e6<<"s"<<std::endl;
         std::cout<<"\tError norm:"<<err_norm<<std::endl;
         res.emplace_back(err_norm,(double)duration/1e6);
+
         if(!save_path.empty()){
             saveMatrix(SparseMatrix<double>(x),save_path+names[i]+"_"+solver_name+".mtx");
         }
