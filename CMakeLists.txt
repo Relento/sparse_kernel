@@ -12,9 +12,11 @@ set(COMMON_SOURCES
         triangular_tester.h
         triangular_solver.h
         triangular_naive.h
-        triangular_verifier.h
         numerical_utils.h
+        triangular_serial.h;
         )
+
 #add_executable(main main.cpp ${COMMON_SOURCES})
+
 add_executable(test_main test_main.cpp ${COMMON_SOURCES} )
 add_executable(test_eigen test_eigen.cpp ${COMMON_SOURCES} )

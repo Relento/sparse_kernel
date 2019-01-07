@@ -62,10 +62,19 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
         if (cal_err){
             L_orig = L;
         }
+        std::cout.precision(6);
+        std::cout<<"Test case \""<<names[i]<<"\":"<<std::endl;
+        std::cout<<"\tCol size: "<<Ls[i]->n<<std::endl;
 
         t1 = high_resolution_clock::now();
-        solver->solve(L,x);
+        int err = solver->solve(L,x);
         t2 = high_resolution_clock::now();
+
+        if (err!=0){
+            std::cout<<"Something wrong happens! "<<std::endl;
+            continue;
+        }
+
         auto duration = duration_cast<microseconds>(t2-t1).count();
 
         if (cal_err){
@@ -77,10 +86,7 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
         }
 
 
-        std::cout.precision(6);
-        std::cout<<"Test case \""<<names[i]<<"\":"<<std::endl;
-        std::cout<<"\tCol size: "<<Ls[i]->n<<std::endl;
-        std::cout<<"\tSolve time:"<<((double)duration)/1e6<<std::endl;
+        std::cout<<"\tSolve time:"<<((double)duration)/1e6<<"s"<<std::endl;
         std::cout<<"\tError norm:"<<err_norm<<std::endl;
         res.emplace_back(err_norm,(double)duration/1e6);
         if(!save_path.empty()){

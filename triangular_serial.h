@@ -2,19 +2,19 @@
 // Created by Rel on 2019/1/6.
 //
 
-#ifndef SPARSE_KERNEL_TRIANGULAR_NAIVE_H
-#define SPARSE_KERNEL_TRIANGULAR_NAIVE_H
+#ifndef SPARSE_KERNEL_TRIANGULAR_SERIAL_H
+#define SPARSE_KERNEL_TRIANGULAR_SERIAL_H
 
 #include "triangular_solver.h"
 
 template <typename T>
-class TriangularNaive : public TriangularSolver<T>{
+class TriangularSerial : public TriangularSolver<T>{
 public:
     int solve(SparseMatrix<T> &L, std::vector<T> &x);
 };
 
 template<typename T>
-int TriangularNaive<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
+int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
     if(L.m != L.n || L.m != x.size())
         return -1;
     for(uint32_t j = 0; j<L.n ;j++){
@@ -29,4 +29,4 @@ int TriangularNaive<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
 }
 
 
-#endif //SPARSE_KERNEL_TRIANGULAR_NAIVE_H
+#endif //SPARSE_KERNEL_TRIANGULAR_SERIAL_H
