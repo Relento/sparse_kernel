@@ -13,6 +13,7 @@ template <typename T>
 class TriangularSolver {
 public:
     // L: the lower triangular matrix
+    // NOTE: It is assumed that L's diagonal entries are all non-zeros
     // x: stores b at start and solution x at the end
     virtual int solve(SparseMatrix<T> &L,std::vector<T> &x) = 0;
 };

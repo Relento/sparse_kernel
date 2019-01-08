@@ -17,23 +17,27 @@ using namespace std::chrono;
 template <typename T>
 class TriangularSerial : public TriangularSolver<T>{
 public:
+    enum class CalReachMethod  {REC_DFS,NON_REC_DFS};
+
+    CalReachMethod cal_reach = CalReachMethod ::NON_REC_DFS;
+
     int solve(SparseMatrix<T> &L, std::vector<T> &x);
 
     // Calculate the reachable set specified in the algorithm Gilbert(1988)
     // b_nnz is the row ind of non-zero entries in b vector
     // entries are sorted in **reverse** topological order
-    // Recursive version
-    std::vector<uint32_t> calReachable(SparseMatrix<T> &L,std::vector<uint32_t> &b_nnz);
-    // Non-recursive version
-    std::vector<uint32_t> calReachable2(SparseMatrix<T> &L,std::vector<uint32_t> &b_nnz);
+
+    // Recursive DFS version
+    std::vector<uint32_t> calReachableRec(SparseMatrix<T> &L,std::vector<uint32_t> &b_nnz);
+    // Non-recursive DFS version
+    std::vector<uint32_t> calReachableNonRec(SparseMatrix<T> &L,std::vector<uint32_t> &b_nnz);
 
     void dfs(uint32_t node,SparseMatrix<T> &L,std::vector<bool> &visit,std::vector<uint32_t> &reach_set);
 };
 
 template<typename T>
 int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
-    if(L.m != L.n || L.m != x.size())
-        return -1;
+    assert(L.m == L.n && L.m == x.size());
 
     std::vector<uint32_t> nnz;
 
@@ -43,15 +47,24 @@ int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
         if(!isZero(x[i])) nnz.push_back(i);
     }
 
-    std::cout<<nnz.size()<<std::endl;
-    std::vector<uint32_t> reach_set = calReachable(L,nnz);
-    std::cout<<reach_set.size()<<std::endl;
+    std::vector<uint32_t> reach_set;
+
+    std::cout<<"Non-zeros in b:"<<nnz.size()<<std::endl;
+    if(cal_reach == CalReachMethod::NON_REC_DFS){
+        reach_set = calReachableNonRec(L,nnz);
+    }
+    else{
+        reach_set = calReachableRec(L,nnz);
+    }
+
+    std::cout<<"Size of reachable set:"<<reach_set.size()<<std::endl;
 
     auto t2 = high_resolution_clock::now();
 
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
     std::cout << "Calculate reachable Time:" << (double)duration / 1e6 <<std::endl;
 
+    t1 = high_resolution_clock::now();
     // Calculate entries in reachable set in topological order
     for(auto it = reach_set.rbegin();it != reach_set.rend(); it++){
 
@@ -64,11 +77,15 @@ int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
         }
 
     }
+    t2 = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(t2-t1).count();
+
+    std::cout << "Numerical Computation Time:" << (double)duration / 1e6 <<std::endl;
     return 0;
 }
 
 template<typename T>
-std::vector<uint32_t> TriangularSerial<T>::calReachable2(SparseMatrix<T> &L, std::vector<uint32_t> &b_nnz) {
+std::vector<uint32_t> TriangularSerial<T>::calReachableNonRec(SparseMatrix<T> &L, std::vector<uint32_t> &b_nnz){
 
     // A modified non-recursive dfs that can calculate topological order at the same time
     std::vector<bool> visit(L.m);
@@ -91,11 +108,13 @@ std::vector<uint32_t> TriangularSerial<T>::calReachable2(SparseMatrix<T> &L, std
             continue;
         }
 
+        if(visit[cur.second]) continue;
+
         visit[cur.second] = true;
 
         // Mark the end of chilren visiting
-        st.push(std::make_pair(true,cur.second));
-        for(uint32_t i = L.outer_starts[cur.second];i < L.outer_starts[cur.second+1];i++){
+        st.emplace(std::make_pair(true,cur.second));
+        for(uint32_t i = L.outer_starts[cur.second] + 1;i < L.outer_starts[cur.second+1];i++){
             if(visit[L.inner_indices[i]]) continue;
             st.push(std::make_pair(false,L.inner_indices[i]));
         }
@@ -106,7 +125,7 @@ std::vector<uint32_t> TriangularSerial<T>::calReachable2(SparseMatrix<T> &L, std
 }
 
 template<typename T>
-std::vector<uint32_t> TriangularSerial<T>::calReachable(SparseMatrix<T> &L, std::vector<uint32_t> &b_nnz) {
+std::vector<uint32_t> TriangularSerial<T>::calReachableRec(SparseMatrix<T> &L, std::vector<uint32_t> &b_nnz){
     std::vector<bool> visit(L.m);
     std::vector<uint32_t> reach_set;
     for(auto &e:b_nnz){
@@ -119,7 +138,7 @@ template<typename T>
 void TriangularSerial<T>::dfs(uint32_t node,SparseMatrix<T> &L, std::vector<bool> &visit, std::vector<uint32_t> &reach_set) {
     if(visit[node]) return;
     visit[node] = true;
-    for(uint32_t ind = L.outer_starts[node];ind<L.outer_starts[node+1];ind++){
+    for(uint32_t ind = L.outer_starts[node]+1;ind<L.outer_starts[node+1];ind++){
         if(!visit[L.inner_indices[ind]]) dfs(L.inner_indices[ind],L,visit,reach_set);
     }
     reach_set.push_back(node);

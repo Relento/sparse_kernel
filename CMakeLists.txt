@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(sparse_kernel)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Ofast -fopenmp ")
 
 if (WIN32)
 include_directories("C:\\Users\\Rel\\Desktop\\Toronto\\Dehnavi\\eigen_library")

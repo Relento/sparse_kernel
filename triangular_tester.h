@@ -59,7 +59,6 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
         auto &b = *(bs[i]);
         std::vector<double> x(b);
 
-        std::cout<<std::endl;
 
         //Duplicate L in case the solver modifies the original
         // which influences the following test
@@ -89,7 +88,8 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
         }
 
         std::cout<<"\tSolve time:"<<((double)duration)/1e6<<"s"<<std::endl;
-        std::cout<<"\tError norm:"<<err_norm<<std::endl;
+        if(cal_err)
+            std::cout<<"\tError norm:"<<err_norm<<std::endl;
         res.emplace_back(err_norm,(double)duration/1e6);
 
 
@@ -101,12 +101,13 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
             if(fabs(e)>1e-45) nnz45++;
             if(fabs(e)>1e-55) nnz55++;
         }
-        std::cout<<nnz45<<" "<<nnz50<<" "<<nnz55<<std::endl;
+        // Non-zero statistics
+//        std::cout<<nnz45<<" "<<nnz50<<" "<<nnz55<<std::endl;
         if(!save_path.empty()){
             saveMatrix(SparseMatrix<double>(x),save_path+names[i]+"_"+solver_name+".mtx");
         }
     }
-
+    std::cout<<std::endl;
     return res;
 }
 
