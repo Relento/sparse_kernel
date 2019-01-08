@@ -60,6 +60,7 @@ int TriangularPara<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
             x[j] /= L.values[L.outer_starts[j]];
 
             for(uint32_t p = L.outer_starts[j]+1 ; p < L.outer_starts[j+1] ; p++){
+#pragma omp atomic update // assure consistency
                 x[L.inner_indices[p]] -= L.values[p] * x[j];
             }
 

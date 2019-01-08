@@ -22,10 +22,13 @@ int TriangularNaive<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
         // Normalize diagonal entry
         x[j] /= L.values[L.outer_starts[j]];
 
-//#pragma omp parallel for
+//omp_set_num_threads(1);
+#pragma omp parallel for
         for(uint32_t p = L.outer_starts[j]+1 ; p < L.outer_starts[j+1] ; p++){
+#pragma omp atomic update
             x[L.inner_indices[p]] -= L.values[p] * x[j];
         }
+
     }
     return 0;
 }

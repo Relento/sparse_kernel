@@ -69,9 +69,9 @@ int main(int argc,char **argv) {
 //    tester.testSolver(&naive,"naive",true,data_path);
 //    tester.testSolver(&serial,"serial",true,data_path);
 
-//    tester.testSolver(&naive,"naive",true,"");
+    tester.testSolver(&naive,"naive",true,"");
 //    tester.testSolver(&serial,"serial",true,"");
-    tester.testSolver(&para,"para",true,"");
+//    tester.testSolver(&para,"para",true,"");
 
     return 0;
 
