@@ -4,7 +4,14 @@ project(sparse_kernel)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast")
 
+if (WIN32)
 include_directories("C:\\Users\\Rel\\Desktop\\Toronto\\Dehnavi\\eigen_library")
+endif (WIN32)
+
+if (UNIX)
+include_directories("/home/rel/Desktop/eigen-git-mirror")
+endif()
+
 
 set(COMMON_SOURCES
         utils.h
