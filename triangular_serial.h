@@ -22,8 +22,11 @@ public:
     // Calculate the reachable set specified in the algorithm Gilbert(1988)
     // b_nnz is the row ind of non-zero entries in b vector
     // entries are sorted in **reverse** topological order
+    // Recursive version
     std::vector<uint32_t> calReachable(SparseMatrix<T> &L,std::vector<uint32_t> &b_nnz);
+    // Non-recursive version
     std::vector<uint32_t> calReachable2(SparseMatrix<T> &L,std::vector<uint32_t> &b_nnz);
+
     void dfs(uint32_t node,SparseMatrix<T> &L,std::vector<bool> &visit,std::vector<uint32_t> &reach_set);
 };
 
