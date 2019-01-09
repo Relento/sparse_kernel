@@ -20,7 +20,7 @@ enum class MatrixFormat {MATRIXMARKET};
 template <typename T>
 int loadMatrix(SparseMatrix<T> &mat,const std::string &file_name,bool only_lower = false,MatrixFormat mat_format = MatrixFormat::MATRIXMARKET){
 
-    std::ifstream fin(file_name);
+    std::ifstream fin(file_name,std::ios::in);
     if (!fin){
         std::cerr<<"Cannot open the file:"<<file_name<<std::endl;
         return -1;
@@ -163,5 +163,26 @@ int loadVector(std::vector<T> &vec,const std::string file_name){
     }
 
     return 0;
+}
+
+
+// check if the input is a band-diagonal matrix
+template <typename T>
+bool isBand(SparseMatrix<T> L){
+    for(uint col = 0;col <L.n;col++){
+        uint32_t prev;
+        for(uint32_t j = L.outer_starts[col] ; j < L.outer_starts[col+1] ; j++){
+            if(j == L.outer_starts[col]) {
+                prev = L.inner_indices[L.outer_starts[col]];
+                continue;
+            }
+            uint32_t cur = L.inner_indices[j];
+            if(j!= prev + 1){
+                return false;
+            }
+            prev = cur;
+        }
+    }
+    return true;
 }
 #endif //SPARSE_KERNEL_UTILS_H

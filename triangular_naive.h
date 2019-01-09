@@ -18,15 +18,21 @@ template<typename T>
 int TriangularNaive<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
     assert(L.m == L.n && L.m == x.size());
 
+    // Convert vector to arrays
+    T *Lv = &(L.values[0]);
+    T *xv = &(x[0]);
+    uint32_t  *Lo = &(L.outer_starts[0]);
+    uint32_t  *Li = &(L.inner_indices[0]);
+
     for(uint32_t j = 0; j<L.n ;j++){
         // Normalize diagonal entry
-        x[j] /= L.values[L.outer_starts[j]];
+        xv[j] /= Lv[Lo[j]];
 
 //omp_set_num_threads(1);
-#pragma omp parallel for
-        for(uint32_t p = L.outer_starts[j]+1 ; p < L.outer_starts[j+1] ; p++){
-#pragma omp atomic update
-            x[L.inner_indices[p]] -= L.values[p] * x[j];
+//#pragma omp parallel for
+        for(uint32_t p = Lo[j]+1 ; p < Lo[j+1] ; p++){
+//#pragma omp atomic update
+            xv[Li[p]] -= Lv[p] * xv[j];
         }
 
     }
