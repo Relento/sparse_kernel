@@ -17,7 +17,7 @@ static std::string data_path = "C:\\Users\\Rel\\Desktop\\Toronto\\Dehnavi\\spars
 using namespace std::chrono;
 
 int main(int argc,char **argv) {
-    bool test_big = true;
+    bool test_big = false;
     if(argc>=2 && std::string(argv[1]) == "--testbig") test_big = true;
     if(argc>=3) data_path = std::string(argv[2]);
 
@@ -68,9 +68,11 @@ int main(int argc,char **argv) {
 //    tester.testSolver(&naive,"naive",true,data_path);
 //    tester.testSolver(&serial,"serial",true,data_path);
 
-    tester.testSolver(&naive,"naive",true,"");
-    tester.testSolver(&serial,"serial",true,"");
-//    tester.testSolver(&para,"para",true,"");
+//    tester.testSolver(&naive,"naive",true,"");
+//    tester.testSolver(&serial,"serial",true,"");
+    tester.testSolver(&para,"para",true,"");
+    para.average = false;
+    tester.testSolver(&para,"para",true,"");
 
 
     std::cout<<"Check Band:"<<std::endl;

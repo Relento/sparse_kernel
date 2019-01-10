@@ -14,11 +14,13 @@
 template <typename T>
 class TriangularPara : public TriangularSolver<T>{
 public:
-    bool para = true;
+    bool average = true;
+    uint32_t thread_num = 8;
     int solve(SparseMatrix<T> &L, std::vector<T> &x);
 
     // Use BFS to calculate level set that could be parallelized TODO: this could be parallized as well
     std::vector<std::vector<uint32_t>> calLevelSet(SparseMatrix<T> &L);
+    std::vector<std::vector<uint32_t>> calLevelSetAverage(SparseMatrix<T> &L);
 };
 
 
@@ -31,19 +33,24 @@ int TriangularPara<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
 
     auto t1 = high_resolution_clock::now();
 
-    level_set = calLevelSet(L);
+    if(average)
+        level_set = calLevelSetAverage(L);
+    else
+        level_set = calLevelSet(L);
 
     auto t2 = high_resolution_clock::now();
 
 //    std::cout<<"Non-zeros in b:"<<nnz.size()<<std::endl;
     std::cout<<"Size of level set:"<<level_set.size()<<std::endl;
 
-//    uint32_t ct = 0;
-//    for(auto &v:level_set){
-//        std::cout<<v.size()<<" ";
-//        ct+=v.size();
-//    }
-//    std::cout<<"nnz:"<<L.nnz<<" level ele size: "<<ct<<std::endl;
+    if(average){
+        uint32_t ct = 0;
+        for(auto &v:level_set){
+            std::cout<<v.size()<<" ";
+            ct+=v.size();
+        }
+        std::cout<<"nnz:"<<L.nnz<<" level ele size: "<<ct<<std::endl;
+    }
 
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
 //    std::cout << "Calculate level_set Time:" << (double)duration / 1e6 <<std::endl;
@@ -109,6 +116,20 @@ std::vector<std::vector<uint32_t>> TriangularPara<T>::calLevelSet(SparseMatrix<T
                 }
             }
         }
+    }
+
+    return level_set;
+}
+
+template<typename T>
+std::vector<std::vector<uint32_t>> TriangularPara<T>::calLevelSetAverage(SparseMatrix<T> &L) {
+    std::vector<std::vector<uint32_t >> level_set(thread_num);
+    uint32_t average = L.n/thread_num;
+    level_set.emplace_back(std::vector<uint32_t>());
+    for(uint32_t col = 0; col < L.n ; col++){
+        uint32_t ind = col/average;
+        if(ind>=thread_num) ind = thread_num-1;
+        level_set[ind].push_back(col);
     }
 
     return level_set;
