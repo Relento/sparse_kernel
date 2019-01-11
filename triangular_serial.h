@@ -86,7 +86,7 @@ std::vector<uint32_t> TriangularSerial<T>::calReachableNonRec(SparseMatrix<T> &L
 
         visit[cur.second] = true;
 
-        // Mark the end of chilren visiting
+        // Mark the end of children visiting
         st.emplace(std::make_pair(true,cur.second));
         for(uint32_t i = L.outer_starts[cur.second] + 1;i < L.outer_starts[cur.second+1];i++){
             if(visit[L.inner_indices[i]]) continue;
@@ -115,6 +115,7 @@ void TriangularSerial<T>::dfs(uint32_t node,SparseMatrix<T> &L, std::vector<bool
     for(uint32_t ind = L.outer_starts[node]+1;ind<L.outer_starts[node+1];ind++){
         if(!visit[L.inner_indices[ind]]) dfs(L.inner_indices[ind],L,visit,reach_set);
     }
+    // Add each node topologically
     reach_set.push_back(node);
 }
 

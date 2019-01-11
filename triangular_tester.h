@@ -86,7 +86,7 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
 
             // Test symbolic analysis
             t1 = high_resolution_clock::now();
-            err = solver->symAnalyze(L_dup,x);
+            err = solver->symAnalyze(L_dup,x,verbose);
             t2 = high_resolution_clock::now();
             auto duration = duration_cast<microseconds>(t2-t1).count();
             time_sym+=(double)duration/10e6;
@@ -94,7 +94,7 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
 
             // Test numerical solve
             t1 = high_resolution_clock::now();
-            err = solver->solve(L_dup,x);
+            err = solver->solve(L_dup,x,verbose);
             t2 = high_resolution_clock::now();
             duration = duration_cast<microseconds>(t2-t1).count();
             time_solve+=(double)duration/10e6;
@@ -109,8 +109,8 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
             continue;
         }
 
-        auto duration = duration_cast<microseconds>(t2-t1).count();
 
+        // Verify the result by calculating the norm of the error term
         if (cal_err){
             err_norm = differenceNorm(L_dup*x,b);
         }
@@ -120,22 +120,13 @@ TriangularTester<double>::testSolver(TriangularSolver<double> *solver,
         }
 
         if(verbose){
-            std::cout<<"\tSolve time:"<<time_solve<<"s"<<std::endl;
+            std::cout<<"\tSymbolic Analysis time:"<<time_sym<<"s"<<std::endl;
+            std::cout<<"\tNumerical Computation time:"<<time_solve<<"s"<<std::endl;
             if(cal_err)
                 std::cout<<"\tError norm:"<<err_norm<<std::endl;
         }
         res.emplace_back(solver_name,names[i],err_norm,time_sym,time_solve);
 
-//        uint32_t nnz45 = 0;
-//        uint32_t nnz50 = 0;
-//        uint32_t nnz55 = 0;
-//        for (auto &e: x){
-//            if(fabs(e)>1e-50) nnz50++;
-//            if(fabs(e)>1e-45) nnz45++;
-//            if(fabs(e)>1e-55) nnz55++;
-//        }
-//        // Non-zero statistics
-////        std::cout<<nnz45<<" "<<nnz50<<" "<<nnz55<<std::endl;
         if(!save_path.empty()){
             saveMatrix(SparseMatrix<double>(x),save_path+names[i]+"_"+solver_name+".mtx");
         }

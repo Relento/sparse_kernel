@@ -18,7 +18,7 @@ template<typename T>
 int TriangularNaive<T>::solve(SparseMatrix<T> &L, std::vector<T> &x,bool verbose) {
     assert(L.m == L.n && L.m == x.size());
 
-    // Convert vector to arrays
+    // Convert vector to arrays to speed up
     T *Lv = &(L.values[0]);
     T *xv = &(x[0]);
     uint32_t  *Lo = &(L.outer_starts[0]);

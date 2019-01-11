@@ -24,8 +24,6 @@ public:
             const std::vector<T> &values,const std::vector<uint32_t> &inner_indices,const std::vector<uint32_t > &outer_starts)
             :m(m),n(n),nnz(nnz),values(values),inner_indices(inner_indices),outer_starts(outer_starts){}
 
-    // Print out the transpose of the matrix and other debug information
-    void display();
 
     // Convert a column to vector
     int col2Vec(uint32_t col,std::vector<T> &vec);
@@ -42,42 +40,6 @@ public:
 
 };
 
-template <typename T>
-void SparseMatrix<T>::display() {
-    uint32_t  nnz = 0;
-    // display the transpose of the matrix
-    for (uint32_t col = 0; col < n;col++){
-        for (uint32_t row = 0; row < m;row++){
-            if (nnz == outer_starts[col+1] || row < inner_indices[nnz]){
-                std::cout<<"0 ";
-                continue;
-            }
-            std::cout<<values[nnz]<<" ";
-            nnz++;
-        }
-        std::cout<<std::endl;
-    }
-
-    std::cout<<std::endl;
-    std::cout<<std::endl;
-
-    for (auto x:inner_indices){
-        std::cout<<x<<" ";
-    }
-    std::cout<<std::endl;
-
-    for (auto x:outer_starts){
-        std::cout<<x<<" ";
-    }
-
-    std::cout<<std::endl;
-
-    for (auto x:values){
-        std::cout<<x<<" ";
-    }
-
-    std::cout<<std::endl;
-}
 
 template<typename T>
 int SparseMatrix<T>::col2Vec(uint32_t col, std::vector<T> &vec) {

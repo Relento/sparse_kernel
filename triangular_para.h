@@ -45,7 +45,6 @@ int TriangularPara<T>::solve(SparseMatrix<T> &L, std::vector<T> &x,bool verbose)
             // Normalize diagonal entry
             x[j] /= L.values[L.outer_starts[j]];
 
-//#pragma omp parallel for
             for(uint32_t p = L.outer_starts[j]+1 ; p < L.outer_starts[j+1] ; p++){
 #pragma omp atomic update // assure consistency
                 x[L.inner_indices[p]] -= L.values[p] * x[j];
@@ -63,11 +62,14 @@ std::vector<std::vector<uint32_t>> TriangularPara<T>::calLevelSet(SparseMatrix<T
     std::vector<std::vector<uint32_t >> level_set;
     std::vector<uint32_t > indeg(L.m);
 
+    // Calculate in-degrees of each node
     for (uint32_t col = 0; col < L.n ; col++){
         for (uint32_t j = L.outer_starts[col]+1; j < L.outer_starts[col+1]; j++){
             indeg[L.inner_indices[j]]++;
         }
     }
+
+    // Topological sort
 
     level_set.emplace_back(std::vector<uint32_t>());
 
@@ -79,6 +81,7 @@ std::vector<std::vector<uint32_t>> TriangularPara<T>::calLevelSet(SparseMatrix<T
 
     uint32_t cur_level = 0;
 
+    // New level set at each pass of topo sort
     while(!level_set[cur_level].empty()){
         cur_level++;
         level_set.emplace_back(std::vector<uint32_t>());
@@ -126,6 +129,7 @@ TriangularPara<T>::calLevelSetPrune(SparseMatrix<T> &L, std::vector<uint32_t> b_
         indeg.emplace(col,0);
     }
 
+    // Calculate in-degrees of each node
     for (auto &col:reach_set){
         for (uint32_t j = L.outer_starts[col]+1; j < L.outer_starts[col+1]; j++){
             if(visit[L.inner_indices[j]])
@@ -135,6 +139,8 @@ TriangularPara<T>::calLevelSetPrune(SparseMatrix<T> &L, std::vector<uint32_t> b_
 
     level_set.emplace_back(std::vector<uint32_t>());
 
+    // Topological sort
+
     for(auto &col:reach_set){
         if(indeg[col] == 0){
             level_set[0].push_back(col);
@@ -143,6 +149,7 @@ TriangularPara<T>::calLevelSetPrune(SparseMatrix<T> &L, std::vector<uint32_t> b_
 
     uint32_t cur_level = 0;
 
+    // New level set at each pass of topo sort
     while(!level_set[cur_level].empty()){
         cur_level++;
         level_set.emplace_back(std::vector<uint32_t>());

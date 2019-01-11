@@ -28,6 +28,7 @@ int loadMatrix(SparseMatrix<T> &mat,const std::string &file_name,bool only_lower
     uint32_t m,n,nnz;
     std::string line;
 
+    // Throw away comments
     int line_ct  = 1;
     std::getline(fin,line);
     while (!line.empty() && line[0] == '%'){
@@ -35,6 +36,8 @@ int loadMatrix(SparseMatrix<T> &mat,const std::string &file_name,bool only_lower
         line_ct++;
     }
 
+
+    // Read matrix parameters
     std::istringstream line_stream(line);
     line_stream>>m>>n>>nnz;
 
@@ -63,6 +66,9 @@ int loadMatrix(SparseMatrix<T> &mat,const std::string &file_name,bool only_lower
         //
         entries.emplace_back(row-1,col-1,value); // For MM format, index starts from 1
     }
+    // Note: Although the format does not gurantee the entry is sorted,
+    // but the test matrices satified this condition, so comment below
+    // section to speed to loading process
 //#define LOAD_TUPLE_SORT
 
 // Sort the entries according to column for CSC storation
@@ -92,8 +98,10 @@ int loadMatrix(SparseMatrix<T> &mat,const std::string &file_name,bool only_lower
             outer_starts[cur_col] = i;
         }
     }
+
     outer_starts.push_back(nnz);
     mat = SparseMatrix<T>(m,n,nnz,values,inner_indices,outer_starts);
+
     return 0;
 }
 
@@ -128,6 +136,7 @@ int loadVector(std::vector<T> &vec,const std::string file_name){
     uint32_t m,n;
     std::string line;
 
+    // Throw away comments
     int line_ct  = 1;
     std::getline(fin,line);
     while (!line.empty() && line[0] == '%'){
@@ -135,6 +144,7 @@ int loadVector(std::vector<T> &vec,const std::string file_name){
         line_ct++;
     }
 
+    // Read matrix parameters
     std::istringstream line_stream(line);
     line_stream>>m>>n;
 

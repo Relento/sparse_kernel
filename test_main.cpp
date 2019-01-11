@@ -48,7 +48,7 @@ int main(int argc,char **argv) {
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
     auto duration = duration_cast<microseconds>(t2 - t1).count();
-    std::cout << "Load Time:" << (double) duration / 1e6 << "s" << std::endl;
+    std::cout << "Data load Time:" << (double) duration / 1e6 << "s" << std::endl;
 
     b_mat.col2Vec(0, b);
     b_mat_sparse.col2Vec(0,b_sparse);
@@ -62,6 +62,7 @@ int main(int argc,char **argv) {
 
     TriangularTester<double> tester;
 
+    tester.test_ct = 1;
 
     if(test_big){
         tester.loadCase(&L2, &b_sparse,"sparse");
@@ -72,21 +73,22 @@ int main(int argc,char **argv) {
     else{
         tester.loadCase(&L, &b,"10");
     }
+
     std::ofstream f_save("res.txt");
     std::vector<TriangularTester<double>::TestResult> test_results;
 
-    test_results = tester.testSolver(&naive,"naive",true,data_path);
+    test_results = tester.testSolver(&naive,"naive",true,data_path,true);
     tester.prettyPrintResult(f_save,test_results);
 
-    test_results = tester.testSolver(&serial,"serial",true,data_path);
+    test_results = tester.testSolver(&serial,"serial",true,data_path,true);
     tester.prettyPrintResult(f_save,test_results);
 
     para.cal_level = TriangularPara<double>::LevelSetType::Normal;
-    test_results = tester.testSolver(&para,"para_normal",true,"");
+    test_results = tester.testSolver(&para,"para_normal",true,"",true);
     tester.prettyPrintResult(f_save,test_results);
 
     para.cal_level = TriangularPara<double>::LevelSetType::Prune;
-    test_results = tester.testSolver(&para,"para_prune",true,"");
+    test_results = tester.testSolver(&para,"para_prune",true,"",true);
     tester.prettyPrintResult(f_save,test_results);
 
     para.cal_level = TriangularPara<double>::LevelSetType::Average;
