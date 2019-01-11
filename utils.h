@@ -39,7 +39,8 @@ int loadMatrix(SparseMatrix<T> &mat,const std::string &file_name,bool only_lower
     line_stream>>m>>n>>nnz;
 
     typedef std::tuple<uint32_t ,uint32_t ,T> Entry;
-    std::vector<Entry> entries(nnz);
+    std::vector<Entry> entries;
+    entries.reserve(nnz);
 
     for(uint32_t i=0;i<nnz;i++){
         std::getline(fin,line);
@@ -58,8 +59,9 @@ int loadMatrix(SparseMatrix<T> &mat,const std::string &file_name,bool only_lower
             return -1;
         }
 
+        if(only_lower && row < col) continue;
         //
-        entries[i] = std::make_tuple(row-1,col-1,value); // For MM format, index starts from 1
+        entries.emplace_back(row-1,col-1,value); // For MM format, index starts from 1
     }
 //#define LOAD_TUPLE_SORT
 
@@ -72,6 +74,7 @@ int loadMatrix(SparseMatrix<T> &mat,const std::string &file_name,bool only_lower
                   else return std::get<1>(x) < std::get<1>(y);
               });
 #endif
+    nnz = entries.size();
 
     std::vector<T> values(nnz);
     std::vector<uint32_t> inner_indices(nnz),outer_starts(n);

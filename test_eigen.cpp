@@ -15,7 +15,10 @@ static std::string data_path = "/media/rel/Seagate Backup Plus Drive/sparse_data
 using namespace std::chrono;
 using namespace Eigen;
 
-int main(){
+int main(int argc,char ** argv){
+    if(argc >= 2){
+        data_path = std::string(argv[1]);
+    }
     VectorXd x;
     Eigen::SparseMatrix<double, ColMajor> L_a,L_t,b_mat_sparse,b_torso;
     VectorXd b_mat_dense;

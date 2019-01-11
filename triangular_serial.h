@@ -21,7 +21,10 @@ public:
 
     CalReachMethod cal_reach = CalReachMethod ::NON_REC_DFS;
 
-    int solve(SparseMatrix<T> &L, std::vector<T> &x);
+    std::vector<uint32_t> reach_set;
+
+    int solve(SparseMatrix<T> &L, std::vector<T> &x,bool verbose = false);
+    int symAnalyze(SparseMatrix<T> &L, std::vector<T> &x,bool verbose = false);
 
     // Calculate the reachable set specified in the algorithm Gilbert(1988)
     // b_nnz is the row ind of non-zero entries in b vector
@@ -36,35 +39,8 @@ public:
 };
 
 template<typename T>
-int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
-    assert(L.m == L.n && L.m == x.size());
+int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x, bool verbose) {
 
-    std::vector<uint32_t> nnz;
-
-
-    auto t1 = high_resolution_clock::now();
-    for(uint32_t i = 0;i<L.m;i++){
-        if(!isZero(x[i])) nnz.push_back(i);
-    }
-
-    std::vector<uint32_t> reach_set;
-
-    std::cout<<"Non-zeros in b:"<<nnz.size()<<std::endl;
-    if(cal_reach == CalReachMethod::NON_REC_DFS){
-        reach_set = calReachableNonRec(L,nnz);
-    }
-    else{
-        reach_set = calReachableRec(L,nnz);
-    }
-
-    std::cout<<"Size of reachable set:"<<reach_set.size()<<std::endl;
-
-    auto t2 = high_resolution_clock::now();
-
-    auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-    std::cout << "Calculate reachable Time:" << (double)duration / 1e6 <<std::endl;
-
-    t1 = high_resolution_clock::now();
     // Calculate entries in reachable set in topological order
     for(auto it = reach_set.rbegin();it != reach_set.rend(); it++){
 
@@ -78,10 +54,7 @@ int TriangularSerial<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
         }
 
     }
-    t2 = high_resolution_clock::now();
-    duration = duration_cast<microseconds>(t2-t1).count();
 
-    std::cout << "Numerical Computation Time:" << (double)duration / 1e6 <<std::endl;
     return 0;
 }
 
@@ -143,6 +116,33 @@ void TriangularSerial<T>::dfs(uint32_t node,SparseMatrix<T> &L, std::vector<bool
         if(!visit[L.inner_indices[ind]]) dfs(L.inner_indices[ind],L,visit,reach_set);
     }
     reach_set.push_back(node);
+}
+
+template<typename T>
+int TriangularSerial<T>::symAnalyze(SparseMatrix<T> &L, std::vector<T> &x, bool verbose) {
+    assert(L.m == L.n && L.m == x.size());
+
+    std::vector<uint32_t> nnz;
+
+    for(uint32_t i = 0;i<L.m;i++){
+        if(!isZero(x[i])) nnz.push_back(i);
+    }
+
+    if(verbose){
+        std::cout<<"Non-zeros in b:"<<nnz.size()<<std::endl;
+    }
+
+    if(cal_reach == CalReachMethod::NON_REC_DFS){
+        reach_set = calReachableNonRec(L,nnz);
+    }
+    else{
+        reach_set = calReachableRec(L,nnz);
+    }
+
+    if(verbose){
+        std::cout<<"Size of reachable set:"<<reach_set.size()<<std::endl;
+    }
+    return 0;
 }
 
 

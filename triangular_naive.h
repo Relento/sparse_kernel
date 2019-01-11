@@ -11,11 +11,11 @@
 template <typename T>
 class TriangularNaive : public TriangularSolver<T>{
 public:
-    int solve(SparseMatrix<T> &L, std::vector<T> &x);
+    int solve(SparseMatrix<T> &L, std::vector<T> &x, bool verbose = false);
 };
 
 template<typename T>
-int TriangularNaive<T>::solve(SparseMatrix<T> &L, std::vector<T> &x) {
+int TriangularNaive<T>::solve(SparseMatrix<T> &L, std::vector<T> &x,bool verbose) {
     assert(L.m == L.n && L.m == x.size());
 
     // Convert vector to arrays

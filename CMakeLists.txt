@@ -1,16 +1,16 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.10)
 project(sparse_kernel)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -fopenmp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -O3 ")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -O3 ")
 
 if (WIN32)
 include_directories("C:\\Users\\Rel\\Desktop\\Toronto\\Dehnavi\\eigen_library")
 endif (WIN32)
 
 if (UNIX)
-include_directories("/home/rel/Desktop/eigen-git-mirror")
+include_directories("/usr/include/eigen3")
 endif()
 
 
